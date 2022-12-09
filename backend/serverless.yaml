@@ -4,9 +4,33 @@ provider:
   name: aws
   runtime: python3.9
   region: ap-south-1
-  stage: dev
+  stage: ${opt:stage}
   iam:
-    role: ${IAM_ROLE_ARN}
+    role: ${env:IAM_ROLE_ARN}
+
+custom:
+  serverless-offline:
+    noPrependStageInUrl: true
+  environment:
+    DB_HOST:
+      dev: "dev_host"
+    DB_USER:
+      dev: "dev_user"
+    DB_PASSWORD:
+      dev: "dev_password"
+    DB_NAME:
+      dev: "dev_name"
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  app:
+    handler: main.handler
+    url: true
+    events:
+      - http:
+          method: ANY
+          path: /{proxy+}
 
 plugins:
   - serverless-offline
@@ -19,16 +43,3 @@ package:
     - '!package.json'
     - '!package-lock.json'
     - '!requirements.txt'
-
-custom:
-  serverless-offline:
-    noPrependStageInUrl: true
-
-functions:
-  app:
-    handler: main.handler
-    url: true
-    events:
-      - http:
-          method: ANY
-          path: /{proxy+}
