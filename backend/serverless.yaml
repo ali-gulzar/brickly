@@ -1,0 +1,34 @@
+service: brickly-serverless
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-south-1
+  stage: dev
+  iam:
+    role: ${IAM_ROLE_ARN}
+
+plugins:
+  - serverless-offline
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!env/**'
+    - '!package.json'
+    - '!package-lock.json'
+    - '!requirements.txt'
+
+custom:
+  serverless-offline:
+    noPrependStageInUrl: true
+
+functions:
+  app:
+    handler: main.handler
+    url: true
+    events:
+      - http:
+          method: ANY
+          path: /{proxy+}

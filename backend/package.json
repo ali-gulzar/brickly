@@ -1,0 +1,9 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Brickly serverless application",
+  "author": "Muhammad Ali Gulzar",
+  "dependencies": {
+    "serverless-offline": "^12.0.1"
+  }
+}
