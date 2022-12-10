@@ -16,7 +16,7 @@ from models.common import ErrorMessage
 connection_url = engine.url.URL(
     'mysql+pymysql',
     username=os.environ["DB_USER"],
-    password=get_parameter('database-password'),
+    password=get_parameter('DATABASE_PASSWORD'),
     host=os.environ["DB_HOST"],
     port=3306,
     database=os.environ["DB_NAME"]

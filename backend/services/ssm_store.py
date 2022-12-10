@@ -9,5 +9,5 @@ def get_parameter(parameter: str):
         return os.environ[parameter]
 
     client = boto3.client('ssm')
-    value = client.get_parameter(Name=f'/brickly-backend-{ENVIRONMENT}/{parameter}', WithDecryption=True)['Parameter']['Value']
+    value = client.get_parameter(Name=f'/BRICKLY_BACKEND_{ENVIRONMENT}/{parameter}', WithDecryption=True)['Parameter']['Value']
     return value
