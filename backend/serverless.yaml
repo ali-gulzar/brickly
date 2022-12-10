@@ -6,6 +6,7 @@ provider:
   region: ap-south-1
   stage: ${opt:stage}
   environment:
+    ENVIRONMENT: ${opt:stage}
     DB_HOST: ${self:custom.environment.DB_HOST.${self:provider.stage}}
     DB_USER: ${self:custom.environment.DB_USER.${self:provider.stage}}
     DB_PASSWORD: ${self:custom.environment.DB_PASSWORD.${self:provider.stage}}
@@ -49,3 +50,4 @@ package:
     - '!package.json'
     - '!package-lock.json'
     - '!requirements.txt'
+    - '!.serverless/**'

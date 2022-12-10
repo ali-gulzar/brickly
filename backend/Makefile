@@ -4,4 +4,8 @@ i-requirements:
 
 .PHONY: run-api-locally
 run-api-locally:
-	./start-api.sh
+	source scripts.sh; start_api
+
+.PHONY: deploy
+deploy:
+	source scripts.sh; deploy_api

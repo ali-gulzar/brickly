@@ -1,20 +1,22 @@
-import sqlalchemy
+import os
+from sqlalchemy import engine, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
+from services.ssm_store import get_parameter
 
 from models.database import Base, DBUser
 from models.user import User
 from models.common import ErrorMessage
 
-import os
-import time
 
-connection_url = sqlalchemy.engine.url.URL(
+
+
+connection_url = engine.url.URL(
     'mysql+pymysql',
     username=os.environ["DB_USER"],
-    password=os.environ["DB_PASSWORD"],
+    password=get_parameter('database-password'),
     host=os.environ["DB_HOST"],
     port=3306,
     database=os.environ["DB_NAME"]
@@ -22,7 +24,7 @@ connection_url = sqlalchemy.engine.url.URL(
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
-engine = sqlalchemy.create_engine(connection_url)
+engine = create_engine(connection_url)
 DBSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 # serverless function
