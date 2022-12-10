@@ -23,6 +23,7 @@ jobs:
       run: cd backend && npm install
 
     - name: serverless deploy
+      shell: bash
       run: cd backend && make deploy
       env:
         ENVIRONMENT: dev
