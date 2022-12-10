@@ -5,6 +5,11 @@ provider:
   runtime: python3.9
   region: ap-south-1
   stage: ${opt:stage}
+  environment:
+    DB_HOST: ${self:custom.environment.DB_HOST.${self:provider.stage}}
+    DB_USER: ${self:custom.environment.DB_USER.${self:provider.stage}}
+    DB_PASSWORD: ${self:custom.environment.DB_PASSWORD.${self:provider.stage}}
+    DB_NAME: ${self:custom.environment.DB_NAME.${self:provider.stage}}
   iam:
     role: ${env:IAM_ROLE_ARN}
 
@@ -13,13 +18,13 @@ custom:
     noPrependStageInUrl: true
   environment:
     DB_HOST:
-      dev: "dev_host"
+      dev: "brickly-database-dev.cv7vbjo3n63b.ap-south-1.rds.amazonaws.com"
     DB_USER:
-      dev: "dev_user"
+      dev: "brickly_admin"
     DB_PASSWORD:
-      dev: "dev_password"
+      dev: ${env:DATABASE_PWD}
     DB_NAME:
-      dev: "dev_name"
+      dev: "brickly_database_dev"
   pythonRequirements:
     dockerizePip: true
 
@@ -34,6 +39,7 @@ functions:
 
 plugins:
   - serverless-offline
+  - serverless-python-requirements
 
 package:
   individually: true

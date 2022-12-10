@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from mangum import Mangum
 
-import controllers.users as users_controller
+from services.database import engine
+from models.database import Base
+
+import controllers.user as user_controller
 
 app = FastAPI()
 
-app.include_router(users_controller.router, prefix="/users", tags=["users"])
+app.include_router(user_controller.router, prefix="/user", tags=["user"])
 
 handler = Mangum(app)
