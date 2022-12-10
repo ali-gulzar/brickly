@@ -4,13 +4,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
-from services.ssm_store import get_parameter
+from fastapi import HTTPException, status
 
+from services.ssm_store import get_parameter
 from models.database import Base, DBUser
 from models.user import User
 from models.common import ErrorMessage
-
-
 
 
 connection_url = engine.url.URL(
@@ -67,3 +66,10 @@ def db_create_user(user: User, db: Session):
         error_code = error[0]
         error_message = error[1]
         return ErrorMessage(status_code=error_code, message=error_message)
+
+
+def db_get_user_by_phone_number(phone_number: str, db: Session) -> DBUser:
+    user: DBUser = db.query(DBUser).filter(DBUser.phone_number == phone_number).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with phone number {phone_number} not found!")
+    return user

@@ -19,3 +19,8 @@ class UserDisplay(BaseModel):
 
     class Config():
         orm_mode = True
+
+
+class LoggedInUser(UserDisplay):
+    access_token: str
+    token_type: str

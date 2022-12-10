@@ -19,10 +19,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: install dependencies
+    - name: Install dependencies
       run: cd backend && npm install
 
-    - name: serverless deploy
+    - name: Deploy serverless appliction
       run: cd backend && npm install -g serverless@3.24.1 && source scripts.sh; deploy_api
       env:
         ENVIRONMENT: dev
