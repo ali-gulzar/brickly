@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function start_api () {
-    source env-variables.sh
+    . ./env-variables.sh
     OFFLINE=true sls offline --reloadHandler --stage dev
 }
 
