@@ -3,11 +3,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 from typing import Union
 
-from services.database import get_db, db_create_user, Hash
-from services.authentication import create_access_token
+from services.database import get_db, db_create_user, db_invest, db_get_house_by_id, Hash
+from services.authentication import create_access_token, get_current_user
 from models.user import User, UserDisplay, LoggedInUser
 from models.database import DBUser
-from models.common import ErrorMessage
+from models.common import ErrorMessage, Roles
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ def login_user(request: OAuth2PasswordRequestForm = Depends(), db: Session = Dep
     if not Hash.verify(request.password, user.password):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect password!")
     
-    access_token = create_access_token(data={'phone_number': user.phone_number, 'name': user.name})
+    access_token = create_access_token(data={'phone_number': user.phone_number, 'name': user.name, 'role': Roles.user})
 
     return LoggedInUser(phone_number=user.phone_number,
                         phone_number_verified=user.phone_number_verified,
@@ -33,3 +33,11 @@ def login_user(request: OAuth2PasswordRequestForm = Depends(), db: Session = Dep
                         cnic_number_verified=user.cnic_number_verified,
                         access_token=access_token,
                         token_type='bearer')
+
+
+@router.post("/invest/{house_id}")
+def invest(house_id: str, invested_amount: str, db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
+    house = db_get_house_by_id(house_id, db)
+    db_invest(house, current_user, db)
+    return "Invested successfully!"
+

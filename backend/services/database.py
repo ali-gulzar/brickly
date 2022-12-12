@@ -7,8 +7,9 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
 from services.ssm_store import get_parameter
-from models.database import Base, DBUser
+from models.database import Base, DBUser, DBHouse
 from models.user import User
+from models.house import House
 from models.common import ErrorMessage
 
 
@@ -27,8 +28,9 @@ engine = create_engine(connection_url)
 DBSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 # serverless function
-def update_database(event, context):
+def create_database(event, context):
     Base.metadata.create_all(engine)
+    return {"message": "Database created successully!"}
 
 def get_db():
     db_session = DBSession()
@@ -45,6 +47,22 @@ class Hash():
         return pwd_context.verify(plain_password, hashed_password)
 
 
+def commit_to_database_handler(data, db: Session):
+    try:
+        db.add(data)
+        db.commit()
+        db.refresh(data)
+
+        return data
+
+    except IntegrityError as e:
+        error = e.orig.args
+        error_code = error[0]
+        error_message = error[1]
+
+        return ErrorMessage(status_code=error_code, message=error_message)
+
+
 def db_create_user(user: User, db: Session):
     new_user = DBUser(
         phone_number=user.phone_number,
@@ -52,20 +70,9 @@ def db_create_user(user: User, db: Session):
         name=user.name,
         cnic_number=user.cnic_number,
         cnic_number_verified=user.cnic_number_verified,
-        password=Hash.bcrypt(user.password)
+        password=Hash.bcrypt(user.password),
     )
-    try:
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-
-        return new_user
-
-    except IntegrityError as e:
-        error = e.orig.args
-        error_code = error[0]
-        error_message = error[1]
-        return ErrorMessage(status_code=error_code, message=error_message)
+    return commit_to_database_handler(new_user, db)
 
 
 def db_get_user_by_phone_number(phone_number: str, db: Session) -> DBUser:
@@ -73,3 +80,27 @@ def db_get_user_by_phone_number(phone_number: str, db: Session) -> DBUser:
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with phone number {phone_number} not found!")
     return user
+
+
+def db_add_house(house: House, db: Session):
+    new_house = DBHouse(
+        name=house.name,
+        location=house.location,
+        city=house.city,
+        value=house.value,
+        funded=0
+    )
+    return commit_to_database_handler(new_house, db)
+
+
+def db_get_all_houses(db: Session):
+    houses = db.query(DBHouse).all()
+    return houses
+
+def db_get_house_by_id(id: str, db: Session):
+    house = db.query(DBHouse).filter(DBHouse.id == id).first()
+    return house
+
+def db_invest(house: DBHouse, user: DBUser, db: Session):
+    user.invested_in.append(house)
+    db.commit()
