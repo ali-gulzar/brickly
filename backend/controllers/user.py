@@ -5,6 +5,8 @@ from typing import Union
 
 from services.database import get_db, db_create_user, db_invest, db_get_house_by_id, Hash
 from services.authentication import create_access_token, get_current_user
+from services.sns import generate_otp
+from services.dynamo import verify_otp
 from models.user import User, UserDisplay, LoggedInUser
 from models.database import DBUser
 from models.common import ErrorMessage, Roles
@@ -33,6 +35,16 @@ def login_user(request: OAuth2PasswordRequestForm = Depends(), db: Session = Dep
                         cnic_number_verified=user.cnic_number_verified,
                         access_token=access_token,
                         token_type='bearer')
+
+
+@router.post("/generate/phone_number_otp/{phone_number}")
+def generate_phone_number_otp(phone_number: str, current_user: DBUser = Depends(get_current_user)):
+    return generate_otp(phone_number)
+
+
+@router.post("/verify/phone_number_otp/{otp}")
+def verify_phone_number_otp(otp: str, current_user: DBUser = Depends(get_current_user)):
+    return verify_otp('+358449601385', otp)
 
 
 @router.post("/invest/{house_id}")
