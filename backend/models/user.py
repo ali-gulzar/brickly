@@ -1,5 +1,7 @@
+from typing import List, Optional
+
 from pydantic import BaseModel, constr
-from typing import Optional, List
+
 
 class User(BaseModel):
     phone_number: constr(max_length=11, min_length=11, regex="^[0-9]*$")
@@ -18,7 +20,7 @@ class UserDisplay(BaseModel):
     cnic_number_verified: bool
     invested_in: List[dict]
 
-    class Config():
+    class Config:
         orm_mode = True
 
 

@@ -1,28 +1,28 @@
 import os
-from sqlalchemy import engine, create_engine
+
+from fastapi import HTTPException, status
+from passlib.context import CryptContext
+from sqlalchemy import create_engine, engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from passlib.context import CryptContext
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException, status
 
-from services.ssm_store import get_parameter
-from models.database import Base, DBUser, DBHouse
-from models.user import User
-from models.house import House
 from models.common import ErrorMessage
-
+from models.database import Base, DBHouse, DBUser
+from models.house import House
+from models.user import User
+from services.ssm_store import get_parameter
 
 connection_url = engine.url.URL(
-    'mysql+pymysql',
+    "mysql+pymysql",
     username=os.environ["DB_USER"],
-    password=get_parameter('DATABASE_PASSWORD'),
+    password=get_parameter("DATABASE_PASSWORD"),
     host=os.environ["DB_HOST"],
     port=3306,
-    database=os.environ["DB_NAME"]
+    database=os.environ["DB_NAME"],
 )
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 engine = create_engine(connection_url)
 DBSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -32,6 +32,7 @@ def create_database(event, context):
     Base.metadata.create_all(engine)
     return {"message": "Database created successully!"}
 
+
 def get_db():
     db_session = DBSession()
     try:
@@ -39,10 +40,11 @@ def get_db():
     finally:
         db_session.close()
 
-class Hash():
+
+class Hash:
     def bcrypt(password: str):
         return pwd_context.hash(password)
-    
+
     def verify(plain_password: str, hashed_password: str):
         return pwd_context.verify(plain_password, hashed_password)
 
@@ -78,7 +80,10 @@ def db_create_user(user: User, db: Session):
 def db_get_user_by_phone_number(phone_number: str, db: Session) -> DBUser:
     user: DBUser = db.query(DBUser).filter(DBUser.phone_number == phone_number).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with phone number {phone_number} not found!")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with phone number {phone_number} not found!",
+        )
     return user
 
 
@@ -88,7 +93,7 @@ def db_add_house(house: House, db: Session):
         location=house.location,
         city=house.city,
         value=house.value,
-        funded=0
+        funded=0,
     )
     return commit_to_database_handler(new_house, db)
 
@@ -97,9 +102,11 @@ def db_get_all_houses(db: Session):
     houses = db.query(DBHouse).all()
     return houses
 
+
 def db_get_house_by_id(id: str, db: Session):
     house = db.query(DBHouse).filter(DBHouse.id == id).first()
     return house
+
 
 def db_invest(house: DBHouse, user: DBUser, db: Session):
     user.invested_in.append(house)

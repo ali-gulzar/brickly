@@ -1,5 +1,7 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
-from typing import Optional, List
+
 
 class House(BaseModel):
     name: Optional[str]
@@ -12,5 +14,5 @@ class House(BaseModel):
 class HouseDisplay(House):
     pass
 
-    class Config():
+    class Config:
         orm_mode = True

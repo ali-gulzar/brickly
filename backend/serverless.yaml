@@ -17,6 +17,16 @@ provider:
 custom:
   serverless-offline:
     noPrependStageInUrl: true
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      migrate: true
+      inMemory: true
+  sns:
+    port: 4002
+    debug: true
   environment:
     DB_HOST:
       dev: "brickly-database-dev.cv7vbjo3n63b.ap-south-1.rds.amazonaws.com"
@@ -47,6 +57,8 @@ plugins:
   - serverless-offline
   - serverless-python-requirements
   - serverless-plugin-utils
+  - serverless-offline-sns
+  - serverless-dynamodb-local
 
 package:
   individually: true
@@ -57,3 +69,23 @@ package:
     - '!package-lock.json'
     - '!requirements.txt'
     - '!.serverless/**'
+  
+
+resources:
+  Resources:
+    OTPTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OTP
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: timeToLive
+          Enabled: true
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

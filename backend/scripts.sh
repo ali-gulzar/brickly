@@ -13,3 +13,7 @@ function deploy_api () {
     fi
 }
 
+function start_dynamo_db () {
+    . ./env-variables.sh
+    OFFLINE=true sls dynamodb start --stage dev
+}

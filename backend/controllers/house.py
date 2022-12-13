@@ -1,11 +1,11 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 from unique_names_generator import get_random_name
 
-from services.database import get_db, db_add_house, db_get_all_houses
 from models.house import House, HouseDisplay
-
+from services.database import db_add_house, db_get_all_houses, get_db
 
 router = APIRouter()
 
@@ -20,5 +20,3 @@ def add_house(house: House, db: Session = Depends(get_db)):
 @router.get("/all", response_model=List[HouseDisplay])
 def get_all_houses(db: Session = Depends(get_db)):
     return db_get_all_houses(db)
-
-

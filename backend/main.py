@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from mangum import Mangum
 
-import controllers.user as user_controller
 import controllers.house as house_controller
+import controllers.user as user_controller
 
 app = FastAPI()
 
