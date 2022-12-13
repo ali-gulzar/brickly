@@ -108,6 +108,7 @@ def db_get_house_by_id(id: str, db: Session):
     return house
 
 
-def db_invest(house: DBHouse, user: DBUser, db: Session):
+def db_invest(invested_amount: int, house: DBHouse, user: DBUser, db: Session):
+    house.funded = house.funded + invested_amount
     user.invested_in.append(house)
     db.commit()

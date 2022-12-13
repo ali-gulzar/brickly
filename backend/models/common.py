@@ -10,5 +10,8 @@ class ErrorMessage(BaseModel):
 
 class Roles(str, Enum):
     user = "user"
-    admin = "admin"
+    user_description = "Investor in the lands."
     estate_agent = "estate_agent"
+    estate_agent_description = (
+        "Real estate agent who can add, remove and update lands in the system."
+    )

@@ -36,7 +36,7 @@ def login_user(
         )
 
     access_token = authentication.create_access_token(
-        data={"phone_number": user.phone_number, "name": user.name, "role": Roles.user}
+        data={"phone_number": user.phone_number, "name": user.name}
     )
 
     return LoggedInUser(
@@ -67,10 +67,10 @@ def verify_otp(
 @router.post("/invest/{house_id}")
 def invest(
     house_id: str,
-    invested_amount: str,
+    invested_amount: int,
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
 ):
     house = database.db_get_house_by_id(house_id, db)
-    database.db_invest(house, current_user, db)
+    database.db_invest(invested_amount, house, current_user, db)
     return "Invested successfully!"
