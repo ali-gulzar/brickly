@@ -5,6 +5,7 @@ provider:
   runtime: python3.9
   region: ap-south-1
   stage: ${opt:stage}
+  timeout: 10
   environment:
     STAGE: ${opt:stage}
     ENVIRONMENT: ${upper(${opt:stage})}

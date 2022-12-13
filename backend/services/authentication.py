@@ -6,18 +6,17 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from models.database import DBUser
-from services.database import db_get_user_by_phone_number, get_db
-from services.ssm_store import get_parameter
+from services import database, ssm_store
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
-O_AUTH_SECRET_KEY = get_parameter("O_AUTH_SECRET_KEY")
+O_AUTH_SECRET_KEY = ssm_store.get_parameter("O_AUTH_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)
 ) -> DBUser:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -31,7 +30,7 @@ def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = db_get_user_by_phone_number(phone_number, db)
+    user = database.db_get_user_by_phone_number(phone_number, db)
     if user is None:
         raise credentials_exception
     return user

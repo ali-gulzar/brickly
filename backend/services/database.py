@@ -11,12 +11,12 @@ from models.common import ErrorMessage
 from models.database import Base, DBHouse, DBUser
 from models.house import House
 from models.user import User
-from services.ssm_store import get_parameter
+from services import ssm_store
 
 connection_url = engine.url.URL(
     "mysql+pymysql",
     username=os.environ["DB_USER"],
-    password=get_parameter("DATABASE_PASSWORD"),
+    password=ssm_store.get_parameter("DATABASE_PASSWORD"),
     host=os.environ["DB_HOST"],
     port=3306,
     database=os.environ["DB_NAME"],
