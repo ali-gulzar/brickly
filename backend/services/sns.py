@@ -15,14 +15,14 @@ def get_sns_client():
         return boto3.client("sns")
 
 
-def generate_otp(phone_number: str):
+def generate_otp(name: str, phone_number: str):
     otp = randint(1000, 9999)
 
     # Send SMS
     sns_client = get_sns_client()
     sns_client.publish(
         PhoneNumber=f"+92{phone_number[1:]}",
-        Message=f"This is your OTP {otp}.",
+        Message=f"Hi {name}! Please provide this OTP to your brickly application {otp}.",
         MessageAttributes={
             "SMSType": {"DataType": "String", "StringValue": "Transactional"}
         },

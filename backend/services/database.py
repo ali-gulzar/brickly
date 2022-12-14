@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from models.common import ErrorMessage
+from models.common import Message
 from models.database import Base, DBHouse, DBUser
 from models.house import House
 from models.user import User
@@ -59,10 +59,9 @@ def commit_to_database_handler(data, db: Session):
 
     except IntegrityError as e:
         error = e.orig.args
-        error_code = error[0]
         error_message = error[1]
 
-        return ErrorMessage(status_code=error_code, message=error_message)
+        return Message(message=error_message)
 
 
 def db_create_user(user: User, db: Session):
@@ -85,6 +84,13 @@ def db_get_user_by_phone_number(phone_number: str, db: Session) -> DBUser:
             detail=f"User with phone number {phone_number} not found!",
         )
     return user
+
+
+def update_user_info(phone_number: str, attribute: str, value: str, db: Session):
+    db.query(DBUser).filter(DBUser.phone_number == phone_number).update(
+        {attribute: value}
+    )
+    db.commit()
 
 
 def db_add_house(house: House, db: Session):

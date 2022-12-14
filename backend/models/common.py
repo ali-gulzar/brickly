@@ -3,8 +3,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class ErrorMessage(BaseModel):
-    status_code: str
+class Message(BaseModel):
     message: str
 
 

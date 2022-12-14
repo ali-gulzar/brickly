@@ -1,18 +1,22 @@
+import os
 from typing import Union
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
-from models.common import ErrorMessage, Roles
+from models.common import Message
 from models.database import DBUser
-from models.user import LoggedInUser, User, UserDisplay
-from services import authentication, database, dynamo, sns
+from models.user import LoggedInUser, User, UserAttributes, UserDisplay
+from services import authentication, database, dynamo, sns, textract
 
 router = APIRouter()
 
 
-@router.post("/create", response_model=Union[UserDisplay, ErrorMessage])
+OFFLINE = os.environ.get("OFFLINE") == "true"
+
+
+@router.post("/create", response_model=Union[UserDisplay, Message])
 def create_user(user: User, db: Session = Depends(database.get_db)):
     return database.db_create_user(user, db)
 
@@ -50,18 +54,39 @@ def login_user(
     )
 
 
-@router.post("/generate/otp")
+@router.post("/generate/otp", status_code=status.HTTP_200_OK)
 def generate_otp(current_user: DBUser = Depends(authentication.get_current_user)):
     phone_number: str = current_user.phone_number
-    return sns.generate_otp(phone_number)
+    otp = sns.generate_otp(current_user.name, phone_number)
+
+    if OFFLINE:
+        return otp
 
 
-@router.post("/verify/otp/{otp}")
+@router.post("/verify/otp/{otp}", response_model=bool)
 def verify_otp(
-    otp: str, current_user: DBUser = Depends(authentication.get_current_user)
+    otp: str,
+    db: Session = Depends(database.get_db),
+    current_user: DBUser = Depends(authentication.get_current_user),
 ):
     phone_number = current_user.phone_number
-    return dynamo.verify_otp(phone_number, otp)
+    verified = dynamo.verify_otp(phone_number, otp)
+    if verified:
+        database.update_user_info(
+            phone_number, UserAttributes.phone_number_verified, True, db
+        )
+        return True
+    return False
+
+
+@router.post("/verify/cnic", response_model=Message)
+def verify_cnic(
+    selfie: UploadFile,
+    cnic_bytes: bytes = File(),
+    current_user=Depends(authentication.get_current_user),
+):
+    textract.analyze_id(cnic_bytes)
+    return Message(message="CNIC verified!")
 
 
 @router.post("/invest/{house_id}")

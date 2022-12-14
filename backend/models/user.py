@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, constr
@@ -22,6 +23,10 @@ class UserDisplay(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserAttributes(str, Enum):
+    phone_number_verified = "phone_number_verified"
 
 
 class LoggedInUser(BaseModel):
