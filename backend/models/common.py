@@ -14,3 +14,7 @@ class Roles(str, Enum):
     estate_agent_description = (
         "Real estate agent who can add, remove and update lands in the system."
     )
+
+
+class TextractAPIResponse(str, Enum):
+    document_number = "DOCUMENT_NUMBER"

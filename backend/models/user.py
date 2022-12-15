@@ -27,6 +27,7 @@ class UserDisplay(BaseModel):
 
 class UserAttributes(str, Enum):
     phone_number_verified = "phone_number_verified"
+    cnic_number_verified = "cnic_number_verified"
 
 
 class LoggedInUser(BaseModel):
