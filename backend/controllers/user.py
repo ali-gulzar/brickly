@@ -17,6 +17,16 @@ router = APIRouter()
 OFFLINE = os.environ.get("OFFLINE") == "true"
 
 
+def user_verified(current_user: DBUser):
+    if not current_user.cnic_number_verified or not current_user.phone_number_verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"{current_user.name} has not verified phone number or cnic number to continue to \
+                    invest in the lands!",
+        )
+    return True
+
+
 @router.post("/create", response_model=Union[UserDisplay, Message])
 def create_user(user: User, db: Session = Depends(database.get_db)):
     return database.db_create_user(user, db)
@@ -107,11 +117,21 @@ def invest(
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
 ):
-    if not current_user.cnic_number_verified or not current_user.phone_number_verified:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"{current_user.name} has not verified phone number or cnic number to continue to invest in the lands!",
-        )
-    house = database.db_get_house_by_id(house_id, db)
-    database.db_invest(invested_amount, house, current_user, db)
-    return "Invested successfully!"
+    if user_verified(current_user):
+        house = database.db_get_house_by_id(house_id, db)
+        database.db_invest(invested_amount, house, current_user, db)
+        return "Invested successfully!"
+
+
+# This will put share of the land on sale
+@router.put("/sale/{house_id}")
+def sale(
+    house_id: str,
+    amount: int,
+    db: Session = Depends(database.get_db),
+    current_user: DBUser = Depends(authentication.get_current_user),
+):  
+    # TODO: design a better database to get better relationship between different entities
+    if user_verified(current_user):
+        pass
+
