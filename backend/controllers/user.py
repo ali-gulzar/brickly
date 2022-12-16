@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -114,17 +114,31 @@ def verify_cnic(
 def invest(
     house_id: str,
     invested_amount: int,
+    sale_id: Optional[str],
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
 ):
     if user_verified(current_user):
         house = database.db_get_house_by_id(house_id, db)
+
+        # TODO: Actual investment
+
         database.db_invest(invested_amount, house, current_user, db)
         return "Invested successfully!"
 
 
+@router.patch("/sale/approve/{sale_id}")
+def approve_sale(sale_id: int, db: Session = Depends(database.get_db), current_user: DBUser = Depends(authentication.get_current_user)):
+    pass
+
+
+@router.patch("/sale/decline/{sale_id}")
+def decline_sale(sale_id: int, db: Session = Depends(database.get_db), current_user: DBUser = Depends(authentication.get_current_user)):
+    pass
+
+
 # This will put share of the land on sale
-@router.put("/sale/{house_id}")
+@router.post("/sale/{house_id}")
 def sale(
     house_id: str,
     amount: int,
