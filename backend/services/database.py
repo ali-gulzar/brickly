@@ -27,11 +27,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 engine = create_engine(connection_url)
 DBSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
-# serverless function
-def create_database(event, context):
-    Base.metadata.create_all(engine)
-    return {"message": "Database created successully!"}
-
 
 def get_db():
     db_session = DBSession()
