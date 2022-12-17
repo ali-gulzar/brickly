@@ -1,7 +1,10 @@
-from sqlalchemy import Boolean, Column, Integer, String, Table
+from sqlalchemy import Boolean, Column, Integer, String, Table, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import ForeignKey
+
+
+from models.common import Roles
 
 Base = declarative_base()
 
@@ -27,10 +30,12 @@ class DBUser(Base):
     cnic_number = Column(String(13))
     cnic_number_verified = Column(Boolean)
     password = Column(String(256))
+    blocked = Column(Boolean)
+    role = Column(Enum(Roles), default=Roles.user)
+
     invested_in = relationship(
         "DBHouse", secondary=user_house_association, back_populates="investors"
     )
-    blocked = Column(Boolean)
 
     @validates("cnic_number")
     def validate_cnic_number(self, key, value):
