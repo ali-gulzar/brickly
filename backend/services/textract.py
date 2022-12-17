@@ -1,7 +1,7 @@
 import boto3
 
 from models.common import TextractAPIResponse
-from models.database import DBUser
+from database.model import DBUser
 
 
 def analyze_id(cnic: bytes, current_user: DBUser):

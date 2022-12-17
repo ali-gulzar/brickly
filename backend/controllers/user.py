@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
 from models.common import Message
-from models.database import DBUser
+from database.model import DBUser
 from models.user import LoggedInUser, User, UserAttributes, UserDisplay
 from services import (authentication, database, dynamo, rekognition, sns,
                       textract)
