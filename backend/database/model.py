@@ -24,15 +24,14 @@ user_house_association = Table(
 class DBUser(Base):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(String(11), unique=True)
+    phone_number = Column(String(11), unique=True, nullable=False)
     phone_number_verified = Column(Boolean)
-    name = Column(String(256))
-    cnic_number = Column(String(13))
+    name = Column(String(256), nullable=False)
+    cnic_number = Column(String(13), nullable=False)
     cnic_number_verified = Column(Boolean)
-    password = Column(String(256))
-    blocked = Column(Boolean)
+    password = Column(String(256), nullable=False)
+    blocked = Column(Boolean, default=False)
     role = Column(Enum(Roles), default=Roles.user)
-
     invested_in = relationship(
         "DBHouse", secondary=user_house_association, back_populates="investors"
     )
@@ -53,11 +52,11 @@ class DBUser(Base):
 class DBHouse(Base):
     __tablename__ = "house"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(256))
-    location = Column(String(256))
-    city = Column(String(256))
-    value = Column(Integer)
-    funded = Column(Integer)
+    name = Column(String(256), nullable=False)
+    location = Column(String(256), nullable=False)
+    city = Column(String(256), nullable=False)
+    value = Column(Integer, nullable=False)
+    funded = Column(Integer, nullable=False)
     investors = relationship(
         "DBUser", secondary=user_house_association, back_populates="invested_in"
     )
