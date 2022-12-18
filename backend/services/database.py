@@ -112,13 +112,16 @@ def db_get_house_by_id(id: str, db: Session):
 
 
 def get_existing_investment(house_id: int, user_id: int, db: Session) -> UserHouseAssociation:
-    investment: UserHouseAssociation = db.query(DBUserHouse).filter(DBUserHouse.user_id == user_id, DBUserHouse.house_id == house_id).first()
-    return investment
+    return db.query(DBUserHouse).filter(DBUserHouse.user_id == user_id, DBUserHouse.house_id == house_id).first()
 
 
-def db_invest(invested_amount: int, house: DBHouse, user: DBUser, db: Session):
+def initiate_investment(house_id: int, user_id: int, invested_amount: int, db: Session):
+        investment: UserHouseAssociation = get_existing_investment(house_id, user_id, db)
+        investment.invested_amount = invested_amount
+        db.commit()
 
-    existing_investment = get_existing_investment(house.id, user.id, db)
+def db_invest(house: DBHouse, user: DBUser, invested_amount: int, db: Session):
+    existing_investment: UserHouseAssociation = get_existing_investment(house.id, user.id, db)
     if existing_investment:
         existing_investment.invested_amount = existing_investment.invested_amount + invested_amount
 
@@ -127,6 +130,14 @@ def db_invest(invested_amount: int, house: DBHouse, user: DBUser, db: Session):
     db.commit()
 
     if not existing_investment:
-        investment = get_existing_investment(house.id, user.id, db)
-        investment.invested_amount = invested_amount
-        db.commit()
+        initiate_investment(house.id, user.id, invested_amount, db)
+
+
+def get_user_house(house_id: int, user_id: int, db: Session) -> UserHouseAssociation:
+    user_house = db.query(DBUserHouse).filter(DBUserHouse.house_id == house_id, DBUserHouse.user_id == user_id).first()
+    if not user_house:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"You have not invested in house {house_id}."
+        )
+    return user_house

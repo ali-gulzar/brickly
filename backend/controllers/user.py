@@ -1,13 +1,14 @@
 import os
-from typing import Optional, Union
+from typing import Union
 
 from fastapi import APIRouter, Depends, File, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
-from database.model import DBUser
+from database.model import DBHouse, DBUser
 from models.common import Message
 from models.user import LoggedInUser, User, UserAttributes, UserDisplay
+from models.user_house_association import UserHouseAssociation
 from services import (authentication, database, dynamo, rekognition, sns,
                       textract)
 
@@ -17,13 +18,20 @@ router = APIRouter()
 OFFLINE = os.environ.get("OFFLINE") == "true"
 
 
-def user_verified(current_user: DBUser):
+def verify_user(current_user: DBUser):
     if not current_user.cnic_number_verified or not current_user.phone_number_verified:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"{current_user.name} has not verified phone number or cnic number to continue to invest in the lands!",
         )
-    return True
+
+
+def verify_investment(house: DBHouse, investment: int):
+    if investment > house.value - house.funded:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"Investment of {investment} not allowed. Available value of property to invest is {house.value - house.funded}.",
+        )
 
 
 @router.post("/create", response_model=Union[UserDisplay, Message])
@@ -119,48 +127,17 @@ def verify_cnic(
     return False
 
 
-@router.post("/invest/{house_id}")
+# TODO: store house information in qldb and process the payment
+@router.post("/invest/{house_id}", status_code=status.HTTP_202_ACCEPTED)
 def invest(
     house_id: str,
     invested_amount: int,
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
 ):
-    if user_verified(current_user):
-        house = database.db_get_house_by_id(house_id, db)
+    verify_user(current_user)
 
-        # TODO: Actual investment
+    house = database.db_get_house_by_id(house_id, db)
+    verify_investment(house, invested_amount)
 
-        database.db_invest(invested_amount, house, current_user, db)
-        return "Invested successfully!"
-
-
-@router.patch("/sale/approve/{sale_id}")
-def approve_sale(
-    sale_id: int,
-    db: Session = Depends(database.get_db),
-    current_user: DBUser = Depends(authentication.get_current_user),
-):
-    pass
-
-
-@router.patch("/sale/decline/{sale_id}")
-def decline_sale(
-    sale_id: int,
-    db: Session = Depends(database.get_db),
-    current_user: DBUser = Depends(authentication.get_current_user),
-):
-    pass
-
-
-# This will put share of the land on sale
-@router.post("/sale/{house_id}")
-def sale(
-    house_id: str,
-    amount: int,
-    db: Session = Depends(database.get_db),
-    current_user: DBUser = Depends(authentication.get_current_user),
-):
-    # TODO: design a better database to get better relationship between different entities
-    if user_verified(current_user):
-        pass
+    database.db_invest(house, current_user, invested_amount, db)

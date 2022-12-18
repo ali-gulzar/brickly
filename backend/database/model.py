@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import ForeignKey
 
 from models.common import Roles
+from models.sale import SaleStatus
 
 Base = declarative_base()
 
@@ -12,11 +13,20 @@ PHONE_NUMBER_LEN = 11
 
 
 class DBUserHouse(Base):
-    __tablename__ = "user_house_association"
-    id = Column(Integer, primary_key=True)
+    __tablename__ = "user_house"
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     house_id = Column(Integer, ForeignKey("house.id"), nullable=False)
     invested_amount = Column(Integer)
+
+
+class DBUserSale(Base):
+    __tablename__ = "sale"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    house_id = Column(Integer, ForeignKey("house.id"), nullable=False)
+    sale_amount = Column(Integer)
+    status = Column(String(10), default=SaleStatus.pending)
 
 
 class DBUser(Base):
@@ -31,7 +41,10 @@ class DBUser(Base):
     blocked = Column(Boolean, default=False)
     role = Column(Enum(Roles), default=Roles.user)
     invested_in = relationship(
-        "DBHouse", secondary="user_house_association", back_populates="investors"
+        "DBHouse", secondary="user_house", back_populates="investors"
+    )
+    for_sale = relationship(
+        "DBHouse", secondary="sale", back_populates="sale_request"
     )
 
     @validates("cnic_number")
@@ -56,5 +69,8 @@ class DBHouse(Base):
     value = Column(Integer, nullable=False)
     funded = Column(Integer, nullable=False)
     investors = relationship(
-        "DBUser", secondary="user_house_association", back_populates="invested_in"
+        "DBUser", secondary="user_house", back_populates="invested_in"
+    )
+    sale_request = relationship(
+        "DBUser", secondary="sale", back_populates=""
     )
