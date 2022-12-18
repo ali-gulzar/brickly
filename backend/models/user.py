@@ -16,6 +16,7 @@ class User(BaseModel):
 
 
 class UserDisplay(BaseModel):
+    id: int
     phone_number: str
     phone_number_verified: bool
     name: str

@@ -6,6 +6,7 @@ from models.common import Roles
 
 
 class Investor(BaseModel):
+    id: int
     phone_number: str
     phone_number_verified: bool
     name: str
@@ -27,6 +28,7 @@ class House(BaseModel):
 
 
 class HouseDisplay(House):
+    id: int
     investors: List[Investor]
 
     class Config:

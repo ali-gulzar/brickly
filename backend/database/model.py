@@ -26,7 +26,7 @@ class DBUser(Base):
     phone_number = Column(String(11), unique=True, nullable=False)
     phone_number_verified = Column(Boolean)
     name = Column(String(256), nullable=False)
-    cnic_number = Column(String(13), nullable=False)
+    cnic_number = Column(String(13), unique=True, nullable=False)
     cnic_number_verified = Column(Boolean)
     password = Column(String(256), nullable=False)
     blocked = Column(Boolean, default=False)
