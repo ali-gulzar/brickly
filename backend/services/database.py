@@ -7,12 +7,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
+from database.model import DBHouse, DBUser
 from models.common import Message
 from models.house import House
 from models.user import User
 from services import ssm_store
-
-from database.model import DBHouse, DBUser
 
 connection_url = engine.url.URL(
     "mysql+pymysql",

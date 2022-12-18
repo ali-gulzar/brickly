@@ -2,6 +2,21 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from models.common import Roles
+
+
+class Investor(BaseModel):
+    phone_number: str
+    phone_number_verified: bool
+    name: str
+    cnic_number: str
+    cnic_number_verified: bool
+    blocked: bool
+    role: Roles
+
+    class Config:
+        orm_mode = True
+
 
 class House(BaseModel):
     name: Optional[str]
@@ -12,7 +27,7 @@ class House(BaseModel):
 
 
 class HouseDisplay(House):
-    pass
+    investors: List[Investor]
 
     class Config:
         orm_mode = True

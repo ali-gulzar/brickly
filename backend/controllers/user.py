@@ -1,12 +1,12 @@
 import os
-from typing import Union, Optional
+from typing import Optional, Union
 
 from fastapi import APIRouter, Depends, File, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
-from models.common import Message
 from database.model import DBUser
+from models.common import Message
 from models.user import LoggedInUser, User, UserAttributes, UserDisplay
 from services import (authentication, database, dynamo, rekognition, sns,
                       textract)
@@ -21,8 +21,7 @@ def user_verified(current_user: DBUser):
     if not current_user.cnic_number_verified or not current_user.phone_number_verified:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"{current_user.name} has not verified phone number or cnic number to continue to \
-                    invest in the lands!",
+            detail=f"{current_user.name} has not verified phone number or cnic number to continue to invest in the lands!",
         )
     return True
 
@@ -98,9 +97,19 @@ def verify_cnic(
 ):
     # get information from id
     id_number_verified = textract.analyze_id(cnic, current_user)
+    if not id_number_verified:
+        raise HTTPException(
+            status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION,
+            detail=f"ID card does not match with the information you provided when creating your account. Please check your details or upload a valid CNIC picture!",
+        )
 
     # compare face in id and selfie
     face_verified = rekognition.compare_face(cnic, selfie)
+    if not face_verified:
+        raise HTTPException(
+            status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION,
+            detail=f"Face mismatched with the user in CNIC and picture!",
+        )
 
     if id_number_verified and face_verified:
         database.update_user_info(
@@ -114,7 +123,6 @@ def verify_cnic(
 def invest(
     house_id: str,
     invested_amount: int,
-    sale_id: Optional[str],
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
 ):
@@ -128,12 +136,20 @@ def invest(
 
 
 @router.patch("/sale/approve/{sale_id}")
-def approve_sale(sale_id: int, db: Session = Depends(database.get_db), current_user: DBUser = Depends(authentication.get_current_user)):
+def approve_sale(
+    sale_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: DBUser = Depends(authentication.get_current_user),
+):
     pass
 
 
 @router.patch("/sale/decline/{sale_id}")
-def decline_sale(sale_id: int, db: Session = Depends(database.get_db), current_user: DBUser = Depends(authentication.get_current_user)):
+def decline_sale(
+    sale_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: DBUser = Depends(authentication.get_current_user),
+):
     pass
 
 
@@ -144,8 +160,7 @@ def sale(
     amount: int,
     db: Session = Depends(database.get_db),
     current_user: DBUser = Depends(authentication.get_current_user),
-):  
+):
     # TODO: design a better database to get better relationship between different entities
     if user_verified(current_user):
         pass
-

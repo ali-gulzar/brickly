@@ -2,6 +2,10 @@
 i-requirements:
 	pip install -r requirements.txt
 
+.PHONY: start-server
+start-server: 
+	make run-api-locally & make start-dynamo-db
+
 .PHONY: run-api-locally
 run-api-locally:
 	. scripts.sh; start_api

@@ -1,2 +1,2 @@
 [tool.black]
-exclude = '(node_modules|venv)'
+exclude = '(node_modules|venv|database)'

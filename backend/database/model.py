@@ -1,8 +1,7 @@
-from sqlalchemy import Boolean, Column, Integer, String, Table, Enum
+from sqlalchemy import Boolean, Column, Enum, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import ForeignKey
-
 
 from models.common import Roles
 

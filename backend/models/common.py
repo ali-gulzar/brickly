@@ -10,6 +10,3 @@ class Message(BaseModel):
 class Roles(str, Enum):
     user = "user"
     estate_agent = "estate_agent"
-
-class TextractAPIResponse(str, Enum):
-    document_number = "DOCUMENT_NUMBER"
