@@ -24,7 +24,6 @@ class House(BaseModel):
     location: str
     city: str
     value: int
-    funded: Optional[int] = 0
 
 
 class HouseDisplay(House):

@@ -8,11 +8,10 @@ from models.common import Roles
 
 class User(BaseModel):
     phone_number: constr(max_length=11, min_length=11, regex="^[0-9]*$")
-    phone_number_verified: Optional[bool] = False
     name: str
     cnic_number: Optional[constr(max_length=13, min_length=13, regex="^[0-9]*$")]
-    cnic_number_verified: Optional[bool] = False
     password: str
+    role: Roles = Roles.user
 
 
 class UserDisplay(BaseModel):

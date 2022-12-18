@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Enum, Integer, String, Table
+from sqlalchemy import Boolean, Column, Enum, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import ForeignKey
@@ -11,13 +11,12 @@ CNIC_NUMBER_LEN = 13
 PHONE_NUMBER_LEN = 11
 
 
-user_house_association = Table(
-    "user_house_association",
-    Base.metadata,
-    Column("invested_amount", Integer),
-    Column("user_id", Integer, ForeignKey("user.id")),
-    Column("house_id", Integer, ForeignKey("house.id")),
-)
+class DBUserHouse(Base):
+    __tablename__ = "user_house_association"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    house_id = Column(Integer, ForeignKey("house.id"), nullable=False)
+    invested_amount = Column(Integer)
 
 
 class DBUser(Base):
@@ -32,7 +31,7 @@ class DBUser(Base):
     blocked = Column(Boolean, default=False)
     role = Column(Enum(Roles), default=Roles.user)
     invested_in = relationship(
-        "DBHouse", secondary=user_house_association, back_populates="investors"
+        "DBHouse", secondary="user_house_association", back_populates="investors"
     )
 
     @validates("cnic_number")
@@ -57,5 +56,5 @@ class DBHouse(Base):
     value = Column(Integer, nullable=False)
     funded = Column(Integer, nullable=False)
     investors = relationship(
-        "DBUser", secondary=user_house_association, back_populates="invested_in"
+        "DBUser", secondary="user_house_association", back_populates="invested_in"
     )
